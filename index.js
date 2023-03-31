@@ -1,12 +1,17 @@
-const lat = 30;
+const lat = 26;
 const lng = 100;
 const init_zoom = 2.5;
 
-const map = L.map('map', {zoomSnap: 0.5, zoomControl: false}).setView([lat,lng], init_zoom);
-L.tileLayer('https://maps.geoapify.com/v1/tile/osm-liberty/{z}/{x}/{y}.png?apiKey=2d48a66bc8f54e8cbd300d2c48ce012d', {
+const map = L.map('map', {zoomSnap: 0.5, zoomControl: false, attributionControl: false}).setView([lat,lng], init_zoom);
+tiles = L.tileLayer('https://maps.geoapify.com/v1/tile/osm-liberty/{z}/{x}/{y}.png?apiKey=2d48a66bc8f54e8cbd300d2c48ce012d', {
   attribution: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | <a href="https://openmaptiles.org/" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a> contributors',
   maxZoom: 20, id: 'osm-bright'
-}).addTo(map);
+});
+tiles.addTo(map);
+
+$(document).ready(function () {
+    map.invalidateSize();
+});
 
 // var southWest = L.latLng(-89.98155760646617, -180),
 // northEast = L.latLng(89.99346179538875, 180);
@@ -115,30 +120,29 @@ function getCHashMap(data) {
 }
 
 d3.json("population.json").then(cHashMap);
-console.log(cMap);
 
 // const country_borders = fetchJSON("ting copy 2.json");
 
 function getColor(d) {
-    return d > 1000 ? '#800026' :
-        d > 500  ? '#BD0026' :
-        d > 200  ? '#E31A1C' :
-        d > 100  ? '#FC4E2A' :
-        d > 50   ? '#FD8D3C' :
-        d > 20   ? '#FEB24C' :
-        d > 10   ? '#FED976' : '#FFEDA0';
+    // d = parseFloat(d);
+    return d > 1000000000 ? '#FF0000' :
+        d > 100000000  ? '#FFA07A' :
+        d > 50000000  ? '#FF8800' :
+        d > 25000000  ? '#FFCC00' :
+        d > 10000000   ? '#FFFF00' :
+        d > 1000000 ? '#FFFFB6':
+        d > 0 ? '#C4F2F8' : '#5A5A5A';
 }
 
 // L.geoJSON(country_borders).addTo(map);
 d3.json("ting.json").then(function (json){
 	function style(feature) {
 		return {
-			fillColor: "#E3E3E3",
-            // fillColor: getColor(feature.properties.density),
+            fillColor: cMap.get(feature.properties.GEOUNIT) ? getColor(cMap.get(feature.properties.GEOUNIT)[0].population) : getColor(0),
 			weight: 1,
 			opacity: 0.4,
 			color: 'white',
-			fillOpacity: 0.3
+			fillOpacity: 0.5
 		};
 	}
 	L.geojson = L.geoJson(json, {
@@ -180,7 +184,7 @@ function onCountryClick(e){
     const pop = document.getElementById("country-pop");
 	if (img) {
 		img.src = "./flags/" + e.target.feature.properties.ISO_A2_EH + ".svg";
-        pop.textContent = "Population: " + cMap.get(e.target.feature.properties.GEOUNIT)[0].population;
+        pop.textContent = "Population: " + (cMap.get(e.target.feature.properties.GEOUNIT) ? (cMap.get(e.target.feature.properties.GEOUNIT)[0].population).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : "No Data");
 	}
 	else {
 		const parent1 = document.getElementById("flag-image-cell");
@@ -190,7 +194,7 @@ function onCountryClick(e){
         const pop = document.createElement("p");
         pop.id = "country-pop";
 		img_child.src = "./flags/" + e.target.feature.properties.ISO_A2_EH + ".svg";
-        pop.textContent = "Population: " + cMap.get(e.target.feature.properties.GEOUNIT)[0].population;
+        pop.textContent = "Population: " + (cMap.get(e.target.feature.properties.GEOUNIT) ? (cMap.get(e.target.feature.properties.GEOUNIT)[0].population).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : "No Data");
 		parent1.appendChild(img_child);
         parent2.appendChild(pop);
 	}
@@ -245,3 +249,26 @@ function onCountryHighLight(e){
 // };
 
 // d3.json("population.json").then(checkIt);
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+    grades = [0, 1000000, 10000000, 25000000, 50000000, 100000000, 1000000000],
+    labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        if(grades[i] == 0) {
+            div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ' + "No Data" + '<br>';
+        }
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (grades[i + 1] ? '&ndash;' + grades[i + 1].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '<br>' : '+');
+}
+
+return div;
+};
+
+legend.addTo(map);
