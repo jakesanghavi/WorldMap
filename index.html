@@ -1,0 +1,40 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="index.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+    crossorigin=""/>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+    crossorigin=""></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+</head>
+<body>
+    <div id="map" style="height: 100%"></div>
+    <script src="index.js"></script>
+    <div class="tabs" id="data-tabs-container">
+        <div id="data-tabs">
+            <div id="tab">
+                Social Data
+            </div>
+            <div id="tab">
+                Natural Data
+            </div>
+            <div id="tab">
+                Disease Data
+            </div>
+        </div>
+    </div>
+    <div class="card" id="country-card">
+        <div id="card-contents">
+            <div id="card-title">
+                <p id="country-name">Click on a country to see its statistics!</p>
+                <div id="flag-image-cell">
+            </div>
+            </div>
+        </div>
+    </div>
+    <div id="left"></div>
+</body>
